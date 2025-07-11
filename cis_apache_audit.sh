@@ -104,6 +104,14 @@ check_default_html_removed
 check_tls_versions
 check_apache_files_owned_by_root
 
+# === Display Banner While Executing ===
+echo "==============================================="
+echo "         CIS Benchmark Check for Apache         "
+echo "               Developed by: Astra              "
+echo "==============================================="
+
+echo "Running audit checks..."
+
 ### Generate HTML Report ###
 passed=$(grep -c '|Pass|' "$TMP_RESULT")
 failed=$(grep -c '|Fail|' "$TMP_RESULT")
@@ -179,38 +187,37 @@ while IFS='|' read -r id title risk status remediation notes; do
   echo "<tr class='$class'><td>$id</td><td>$title</td><td>$risk</td><td>$status</td><td>$remediation</td><td><pre>$notes</pre></td></tr>" >> "$HTML_REPORT"
 done < "$TMP_RESULT"
 
-echo "</table>
-<script>
-  const passed = $passed;
-  const failed = $failed;
-  const canvas = document.getElementById('chart');
-  const ctx = canvas.getContext('2d');
-  const total = passed + failed;
-  const passRatio = passed / total;
-  const failRatio = failed / total;
-  let startAngle = 0;
-  const passAngle = 2 * Math.PI * passRatio;
-  const failAngle = 2 * Math.PI * failRatio;
-  // Draw Pass
-  ctx.beginPath();
-  ctx.moveTo(200, 100);
-  ctx.arc(200, 100, 80, startAngle, startAngle + passAngle);
-  ctx.fillStyle = '#4CAF50';
-  ctx.fill();
-  // Draw Fail
-  startAngle += passAngle;
-  ctx.beginPath();
-  ctx.moveTo(200, 100);
-  ctx.arc(200, 100, 80, startAngle, startAngle + failAngle);
-  ctx.fillStyle = '#F44336';
-  ctx.fill();
-  // Labels
-  ctx.fillStyle = '#000';
-  ctx.font = '14px Arial';
-  ctx.fillText(`Pass: ${passed}`, 20, 190);
-  ctx.fillText(`Fail: ${failed}`, 100, 190);
-</script>
-</body></html>" >> "$HTML_REPORT"
+echo "</table>"
+echo "<h2>Executive Summary</h2>"
+echo "<ul><li>Total Checks: $total</li><li>Pass: $passed</li><li>Fail: $failed</li></ul>"
+echo "<script>"
+echo "  const passed = $passed;"
+echo "  const failed = $failed;"
+echo "  const canvas = document.getElementById('chart');"
+echo "  const ctx = canvas.getContext('2d');"
+echo "  const total = passed + failed;"
+echo "  const passRatio = passed / total;"
+echo "  const failRatio = failed / total;"
+echo "  let startAngle = 0;"
+echo "  const passAngle = 2 * Math.PI * passRatio;"
+echo "  const failAngle = 2 * Math.PI * failRatio;"
+echo "  ctx.beginPath();"
+echo "  ctx.moveTo(200, 100);"
+echo "  ctx.arc(200, 100, 80, startAngle, startAngle + passAngle);"
+echo "  ctx.fillStyle = '#4CAF50';"
+echo "  ctx.fill();"
+echo "  startAngle += passAngle;"
+echo "  ctx.beginPath();"
+echo "  ctx.moveTo(200, 100);"
+echo "  ctx.arc(200, 100, 80, startAngle, startAngle + failAngle);"
+echo "  ctx.fillStyle = '#F44336';"
+echo "  ctx.fill();"
+echo "  ctx.fillStyle = '#000';"
+echo "  ctx.font = '14px Arial';"
+echo "  ctx.fillText('Pass: ' + passed, 20, 190);"
+echo "  ctx.fillText('Fail: ' + failed, 100, 190);"
+echo "</script>"
+</body></html>" >> "$HTML_REPORT" >> "$HTML_REPORT"
 
 rm -f "$TMP_RESULT"
 echo "✅ Report generated at $HTML_REPORT"
