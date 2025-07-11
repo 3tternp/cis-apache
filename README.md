@@ -38,13 +38,13 @@ Example sections included:
 
 ## 🔧 Usage
 
-```bash
+```
 # Make the script executable
 chmod +x cis_apache_audit.sh
 
 # Run it with root privileges
 sudo ./cis_apache_audit.sh
-
+```
 
 <img width="697" height="133" alt="image" src="https://github.com/user-attachments/assets/d8957a3e-a4ac-41ef-8a89-df08be7e13c9" />
 
