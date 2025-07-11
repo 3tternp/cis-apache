@@ -78,7 +78,7 @@ check_tls_versions() {
   title="Ensure TLSv1.0 and TLSv1.1 Are Disabled"
   risk="High"
   remediation="Use 'SSLProtocol all -SSLv2 -SSLv3 -TLSv1 -TLSv1.1'"
-  notes=$(grep -i 'SSLProtocol' $APACHE_CONF | grep -v '#')
+  notes=$(grep -i 'SSLProtocol' "$APACHE_CONF" 2>/dev/null | grep -v '#')
   status="Fail"
   [[ "$notes" =~ -TLSv1 ]] && status="Pass"
   log_finding "$id" "$title" "$risk" "$status" "$remediation" "$notes"
@@ -110,6 +110,95 @@ failed=$(grep -c '|Fail|' "$TMP_RESULT")
 total=$((passed + failed))
 
 cat <<EOF > "$HTML_REPORT"
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>CIS Apache Audit Report</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+h1.banner {
+  background-color: #004466;
+  color: white;
+  padding: 10px;
+  margin-bottom: 0;
+  font-size: 24px;
+  text-align: center;
+}
+h3.subtitle {
+  background-color: #007799;
+  color: white;
+  padding: 8px;
+  margin-top: 0;
+  text-align: center;
+  font-weight: normal;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+th, td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+th {
+  background-color: #f0f0f0;
+}
+.pass {
+  background-color: #c8f7c5;
+}
+.fail {
+  background-color: #f9c0c0;
+}
+canvas {
+  display: block;
+  margin: 20px auto;
+  max-width: 400px;
+}
+</style>
+<script>
+function drawChart(pass, fail) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 400;
+  canvas.height = 200;
+  document.body.insertBefore(canvas, document.body.children[5]);
+  const ctx = canvas.getContext('2d');
+
+  const total = pass + fail;
+  const passRatio = pass / total;
+  const failRatio = fail / total;
+
+  let startAngle = 0;
+  const passAngle = 2 * Math.PI * passRatio;
+  const failAngle = 2 * Math.PI * failRatio;
+
+  // Pass (Green)
+  ctx.beginPath();
+  ctx.moveTo(200, 100);
+  ctx.arc(200, 100, 80, startAngle, startAngle + passAngle);
+  ctx.fillStyle = '#4CAF50';
+  ctx.fill();
+
+  // Fail (Red)
+  startAngle += passAngle;
+  ctx.beginPath();
+  ctx.moveTo(200, 100);
+  ctx.arc(200, 100, 80, startAngle, startAngle + failAngle);
+  ctx.fillStyle = '#F44336';
+  ctx.fill();
+
+  // Labels
+  ctx.fillStyle = '#000';
+  ctx.font = '14px Arial';
+  ctx.fillText(`Pass: ${pass}`, 20, 190);
+  ctx.fillText(`Fail: ${fail}`, 100, 190);
+}
+</script>
+</head><body>
+<h1 class="banner">CIS Benchmark Check 4 Apache</h1>
+<h3 class="subtitle">Developed by: Astra</h3><hr>
 <!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>CIS Apache Audit Report</title>
 
@@ -197,6 +286,7 @@ while IFS='|' read -r id title risk status remediation notes; do
 done < "$TMP_RESULT"
 
 echo "</table>
+<script>drawChart($passed, $failed);</script>
 <script>drawChart($passed, $failed);</script></body></html>" >> "$HTML_REPORT"
 
 rm -f "$TMP_RESULT"
